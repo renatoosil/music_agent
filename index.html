@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Music Agent</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@400;500;600;700&display=swap');
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#080808;color:#F0EDE6;font-family:'Syne',sans-serif;min-height:100vh;padding-bottom:60px}
+  input,select,textarea{font-family:'Syne',sans-serif}
+  ::-webkit-scrollbar{width:4px}
+  ::-webkit-scrollbar-thumb{background:rgba(245,166,35,0.3);border-radius:4px}
+  .header{padding:16px 24px;border-bottom:0.5px solid rgba(245,166,35,0.15);display:flex;align-items:center;gap:14px;background:rgba(245,166,35,0.02)}
+  .logo{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#F5A623,#A05D0A);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
+  .header-title{font-size:14px;font-weight:700;letter-spacing:2px}
+  .header-sub{font-size:10px;color:rgba(255,255,255,0.3);letter-spacing:0.5px;margin-top:2px;font-family:'DM Mono',monospace}
+  .powered{margin-left:auto;font-size:10px;color:rgba(245,166,35,0.4);font-family:'DM Mono',monospace;white-space:nowrap}
+  .form{padding:20px 24px 0}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+  .field{margin-bottom:12px}
+  label{font-size:10px;color:rgba(255,255,255,0.35);letter-spacing:1.2px;display:block;margin-bottom:6px;font-family:'DM Mono',monospace}
+  input,select,textarea{width:100%;padding:10px 13px;background:rgba(255,255,255,0.04);border:0.5px solid rgba(255,255,255,0.1);border-radius:8px;color:#F0EDE6;font-size:13px;outline:none;transition:border-color 0.2s}
+  input:focus,select:focus,textarea:focus{border-color:rgba(245,166,35,0.4)}
+  select{background:#111;cursor:pointer}
+  select option{background:#111}
+  textarea{resize:vertical;min-height:80px;line-height:1.6}
+  .divider{height:0.5px;background:rgba(255,255,255,0.06);margin:4px 0 12px}
+  .cblock{margin-bottom:12px;border:0.5px solid rgba(255,255,255,0.1);border-radius:10px;overflow:hidden}
+  .cblock.amber{border-color:rgba(245,166,35,0.2)}
+  .cblock.green{border-color:rgba(80,200,120,0.2)}
+  .cheader{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;cursor:pointer;user-select:none;transition:background 0.2s}
+  .cblock.amber .cheader{background:rgba(245,166,35,0.05)}
+  .cblock.amber .cheader:hover{background:rgba(245,166,35,0.09)}
+  .cblock.green .cheader{background:rgba(80,200,120,0.04)}
+  .cblock.green .cheader:hover{background:rgba(80,200,120,0.08)}
+  .cheader-left{display:flex;align-items:center;gap:10px}
+  .ctitle{font-size:11px;font-weight:600;letter-spacing:1px}
+  .cblock.amber .ctitle{color:#F5A623}
+  .cblock.green .ctitle{color:#50C878}
+  .csub{font-size:10px;color:rgba(255,255,255,0.3);font-family:'DM Mono',monospace;margin-top:1px}
+  .ctoggle{font-size:10px;font-family:'DM Mono',monospace}
+  .cblock.amber .ctoggle{color:rgba(245,166,35,0.5)}
+  .cblock.green .ctoggle{color:rgba(80,200,120,0.5)}
+  .cbody{padding:14px;display:none}
+  .cblock.amber .cbody{background:rgba(245,166,35,0.02)}
+  .cblock.green .cbody{background:rgba(80,200,120,0.02)}
+  .cbody.open{display:block}
+  .tip{font-size:11px;color:rgba(255,255,255,0.3);font-family:'DM Mono',monospace;margin-bottom:12px;line-height:1.65;padding:8px 12px;background:rgba(255,255,255,0.03);border-radius:6px}
+  .cblock.amber .tip{border-left:2px solid rgba(245,166,35,0.3)}
+  .cblock.green .tip{border-left:2px solid rgba(80,200,120,0.3)}
+  .ref-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+  .cfg-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+  .cfg-field label{color:rgba(80,200,120,0.7)}
+  .cfg-field textarea{min-height:70px;font-family:'DM Mono',monospace;font-size:12px;line-height:1.6}
+  .cfg-actions{display:flex;align-items:center;gap:8px;margin-top:4px;flex-wrap:wrap}
+  .save-btn{display:inline-flex;align-items:center;gap:6px;font-size:11px;cursor:pointer;padding:7px 14px;border:0.5px solid rgba(80,200,120,0.4);border-radius:7px;background:rgba(80,200,120,0.08);color:#50C878;transition:all 0.2s;font-family:'DM Mono',monospace;letter-spacing:0.5px}
+  .save-btn:hover{background:rgba(80,200,120,0.15)}
+  .save-btn.amber{border-color:rgba(245,166,35,0.4);color:#F5A623;background:rgba(245,166,35,0.08)}
+  .save-btn.amber:hover{background:rgba(245,166,35,0.15)}
+  .reset-btn{display:inline-flex;align-items:center;gap:6px;font-size:11px;cursor:pointer;padding:7px 12px;border:0.5px solid rgba(255,255,255,0.1);border-radius:7px;background:transparent;color:rgba(255,255,255,0.3);transition:all 0.2s;font-family:'DM Mono',monospace}
+  .reset-btn:hover{color:rgba(255,255,255,0.6)}
+  .saved-indicator{font-size:10px;color:rgba(80,200,120,0.6);font-family:'DM Mono',monospace}
+  #btn{width:100%;padding:13px;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;letter-spacing:2px;font-family:'Syne',sans-serif;transition:all 0.2s;margin-top:6px}
+  #btn.ready{background:linear-gradient(135deg,#F5A623,#B86E0A);color:#0C0C0C}
+  #btn.disabled{background:rgba(245,166,35,0.12);color:rgba(255,255,255,0.2);cursor:not-allowed}
+  #btn.loading{background:rgba(245,166,35,0.1);color:#F5A623;cursor:wait}
+  #loadMsg{text-align:center;margin-top:12px;font-size:11px;color:#F5A623;font-family:'DM Mono',monospace;font-style:italic;min-height:18px;animation:pulse 1.5s ease-in-out infinite}
+  @keyframes pulse{0%,100%{opacity:0.35}50%{opacity:1}}
+  #error{margin-top:10px;padding:10px 14px;background:rgba(255,80,80,0.07);border:0.5px solid rgba(255,80,80,0.2);border-radius:8px;font-size:12px;color:#FF8080;display:none}
+  .results{padding:26px 24px 0;display:none}
+  .tabs{border-bottom:0.5px solid rgba(255,255,255,0.08);display:flex;overflow-x:auto;margin-bottom:0}
+  .tab-btn{padding:9px 16px;border:none;background:transparent;color:rgba(255,255,255,0.35);font-size:12px;cursor:pointer;font-family:'Syne',sans-serif;font-weight:400;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;transition:color 0.2s;letter-spacing:0.5px}
+  .tab-btn.active{color:#F5A623;font-weight:600;border-bottom-color:#F5A623}
+  .tab-content{background:rgba(255,255,255,0.02);border:0.5px solid rgba(255,255,255,0.06);border-top:none;border-radius:0 0 10px 10px;padding:20px;display:none}
+  .tab-content.active{display:block}
+  .tab-label{font-size:10px;color:#F5A623;letter-spacing:1.5px;margin-bottom:14px;font-family:'DM Mono',monospace}
+  .song-title{font-size:20px;font-weight:700;letter-spacing:1px;color:#F5A623;margin-bottom:4px}
+  .song-artists{font-size:11px;color:rgba(255,255,255,0.3);font-family:'DM Mono',monospace;margin-bottom:18px}
+  .text-block{font-size:14px;line-height:1.9;color:rgba(255,255,255,0.82);white-space:pre-wrap}
+  .lyrics-block{font-size:14px;line-height:2.1;color:rgba(255,255,255,0.85);white-space:pre-wrap;border-left:2px solid rgba(245,166,35,0.2);padding-left:16px}
+  .mono-block{font-size:12px;line-height:1.75;color:rgba(255,255,255,0.85);background:rgba(245,166,35,0.04);border:0.5px solid rgba(245,166,35,0.18);border-radius:8px;padding:14px;font-family:'DM Mono',monospace;white-space:pre-wrap}
+  .plain-block{font-size:13px;color:rgba(255,255,255,0.85);background:rgba(255,255,255,0.04);border-radius:8px;padding:10px 14px;white-space:pre-wrap;line-height:1.7}
+  .scroll-block{max-height:220px;overflow-y:auto}
+  .sub-label{font-size:10px;color:rgba(255,255,255,0.3);letter-spacing:1px;margin-bottom:6px;font-family:'DM Mono',monospace;margin-top:14px}
+  .sub-label:first-of-type{margin-top:0}
+  .char-count{font-size:10px;color:rgba(255,255,255,0.2);margin-top:6px;font-family:'DM Mono',monospace}
+  .copy-btn{display:inline-flex;align-items:center;gap:6px;font-size:11px;cursor:pointer;padding:5px 12px;border:0.5px solid rgba(255,255,255,0.1);border-radius:6px;background:rgba(255,255,255,0.03);color:rgba(255,255,255,0.4);transition:all 0.2s;margin-top:10px;font-family:'DM Mono',monospace;letter-spacing:0.5px}
+  .copy-btn:hover{background:rgba(245,166,35,0.07);border-color:rgba(245,166,35,0.25);color:#F5A623}
+  .copy-btn.done{background:rgba(245,166,35,0.1);border-color:rgba(245,166,35,0.35);color:#F5A623}
+  .import-row{display:flex;gap:8px;margin-bottom:0}
+  .import-row textarea{min-height:46px;font-family:'DM Mono',monospace;font-size:11px}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">♪</div>
+  <div>
+    <div class="header-title">MUSIC AGENT</div>
+    <div class="header-sub">Conceito · Letra · Suno · YouTube · Capa</div>
+  </div>
+  <div class="powered">Powered by Claude AI</div>
+</div>
+
+<div class="form">
+  <div class="grid2">
+    <div><label>ARTISTA PRINCIPAL *</label><input id="artist1" placeholder="ex: Dua Lipa"></div>
+    <div><label>FEAT. (opcional)</label><input id="artist2" placeholder="ex: Dominic Fike"></div>
+  </div>
+  <div class="field">
+    <label>TEMA / CONCEITO *</label>
+    <input id="theme" placeholder="ex: dois opostos que se atraem / saudade de quem nunca existiu">
+  </div>
+  <div class="grid2">
+    <div>
+      <label>IDIOMA DA LETRA</label>
+      <select id="lang">
+        <option value="English">🇺🇸 Inglês</option>
+        <option value="PT-BR">🇧🇷 Português BR</option>
+      </select>
+    </div>
+    <div><label>NOTAS DE ESTILO (opcional)</label><input id="notes" placeholder="ex: dark, BPM lento, trap..."></div>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="cblock amber" id="refBlock">
+    <div class="cheader" onclick="toggleBlock('refBlock')">
+      <div class="cheader-left">
+        <span style="font-size:15px">🎵</span>
+        <div>
+          <div class="ctitle">MAPA MUSICAL DE REFERÊNCIA</div>
+          <div class="csub">opcional — músicas/artistas pra basear o estilo</div>
+        </div>
+      </div>
+      <span class="ctoggle" id="refBlock-arrow">▼ abrir</span>
+    </div>
+    <div class="cbody" id="refBlock-body">
+      <div class="tip">💡 Ex: "Levitating" da Dua Lipa + "3 Nights" do Dominic Fike — o agente analisa o DNA e usa como blueprint.</div>
+      <div class="ref-row">
+        <div><label>MÚSICA 1</label><input id="rs1" placeholder="ex: Levitating"></div>
+        <div><label>ARTISTA</label><input id="ra1" placeholder="ex: Dua Lipa"></div>
+      </div>
+      <div class="ref-row">
+        <div><label>MÚSICA 2</label><input id="rs2" placeholder="ex: 3 Nights"></div>
+        <div><label>ARTISTA</label><input id="ra2" placeholder="ex: Dominic Fike"></div>
+      </div>
+      <div class="ref-row">
+        <div><label>MÚSICA 3 (opcional)</label><input id="rs3" placeholder="ex: Peaches"></div>
+        <div><label>ARTISTA</label><input id="ra3" placeholder="ex: Justin Bieber"></div>
+      </div>
+      <div class="field">
+        <label>INSTRUÇÕES EXTRAS DE MAPA</label>
+        <textarea id="rextra" placeholder="ex: Quero o groove de baixo do Levitating, a guitarra lo-fi do 3 Nights."></textarea>
+      </div>
+    </div>
+  </div>
+
+  <div class="cblock green" id="cfgBlock">
+    <div class="cheader" onclick="toggleBlock('cfgBlock')">
+      <div class="cheader-left">
+        <span style="font-size:15px">⚙️</span>
+        <div>
+          <div class="ctitle">CONFIGURAÇÕES DE PADRÃO</div>
+          <div class="csub">personalize o formato de cada saída</div>
+        </div>
+      </div>
+      <span class="ctoggle" id="cfgBlock-arrow">▼ abrir</span>
+    </div>
+    <div class="cbody" id="cfgBlock-body">
+      <div class="tip">✏️ Preencha e clique em SALVAR PADRÕES. O agente vai seguir exatamente esses formatos. Use Exportar para guardar seu código e Importar para restaurar depois.</div>
+      <div class="cfg-grid">
+        <div class="cfg-field field">
+          <label>FORMATO DO TÍTULO</label>
+          <textarea id="cfg-title" placeholder="Ex: [artista] & [artista] | [nome da musica] (Official Concept Video)"></textarea>
+        </div>
+        <div class="cfg-field field">
+          <label>FORMATO DAS TAGS</label>
+          <textarea id="cfg-tags" placeholder="Ex: nome de artistas, referências musicais. NÃO mencionar IA."></textarea>
+        </div>
+      </div>
+      <div class="field cfg-field">
+        <label>FORMATO DA DESCRIÇÃO</label>
+        <textarea id="cfg-desc" style="min-height:100px" placeholder='Ex: "E se [Artista1] e [Artista2] fizessem uma música juntos?" Máximo 5 linhas. Sem mencionar IA.'></textarea>
+      </div>
+      <div class="cfg-grid">
+        <div class="cfg-field field">
+          <label>TOM / VOZ DO CONCEITO</label>
+          <textarea id="cfg-concept" placeholder="Ex: Técnico musical. Mencionar BPM e tom. Citar influências específicas."></textarea>
+        </div>
+        <div class="cfg-field field">
+          <label>ESTRUTURA DA LETRA</label>
+          <textarea id="cfg-lyrics" placeholder="Ex: Sempre incluir colchetes [intro] [refrão] [bridge] etc."></textarea>
+        </div>
+      </div>
+      <div class="field cfg-field">
+        <label>OUTRAS INSTRUÇÕES GERAIS</label>
+        <textarea id="cfg-general" placeholder="Ex: Sempre criar música diferenciada. Atuar como produtor com 30 anos de experiência."></textarea>
+      </div>
+      <div class="field cfg-field">
+        <label>IMPORTAR CONFIG SALVA</label>
+        <div class="import-row">
+          <textarea id="cfg-import" placeholder="Cole aqui o código exportado e clique em Importar"></textarea>
+          <button class="save-btn" style="white-space:nowrap;align-self:flex-start" onclick="importConfig()">⬆ Importar</button>
+        </div>
+      </div>
+      <div class="cfg-actions">
+        <button class="save-btn" id="saveBtn" onclick="saveConfig()">💾 SALVAR PADRÕES</button>
+        <button class="save-btn amber" onclick="exportConfig()">⬇ Exportar config</button>
+        <button class="reset-btn" onclick="resetConfig()">↺ Limpar</button>
+        <span class="saved-indicator" id="save-indicator"></span>
+      </div>
+    </div>
+  </div>
+
+  <button id="btn" class="disabled" onclick="generate()">✦  GERAR TUDO</button>
+  <div id="loadMsg"></div>
+  <div id="error"></div>
+</div>
+
+<div class="results" id="results">
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('concept',this)">✦ Conceito</button>
+    <button class="tab-btn" onclick="switchTab('lyrics',this)">♪ Letra</button>
+    <button class="tab-btn" onclick="switchTab('suno',this)">◈ Suno</button>
+    <button class="tab-btn" onclick="switchTab('youtube',this)">▶ YouTube</button>
+    <button class="tab-btn" onclick="switchTab('image',this)">◉ Capa</button>
+  </div>
+  <div class="tab-content active" id="tab-concept">
+    <div class="tab-label">CONCEITO & DNA MUSICAL</div>
+    <div class="text-block" id="txt-concept"></div>
+    <button class="copy-btn" onclick="copyEl('txt-concept',this)">⎘ COPIAR CONCEITO</button>
+  </div>
+  <div class="tab-content" id="tab-lyrics">
+    <div class="tab-label">LETRA COMPLETA</div>
+    <div class="song-title" id="txt-song-title"></div>
+    <div class="song-artists" id="txt-song-artists"></div>
+    <div class="lyrics-block" id="txt-lyrics"></div>
+    <button class="copy-btn" onclick="copyEl('txt-lyrics',this)">⎘ COPIAR LETRA</button>
+  </div>
+  <div class="tab-content" id="tab-suno">
+    <div class="tab-label">PROMPT SUNO AI</div>
+    <div class="mono-block" id="txt-suno"></div>
+    <div class="char-count" id="suno-chars"></div>
+    <button class="copy-btn" onclick="copyEl('txt-suno',this)">⎘ COPIAR PROMPT SUNO</button>
+  </div>
+  <div class="tab-content" id="tab-youtube">
+    <div class="tab-label">METADATA YOUTUBE</div>
+    <div class="sub-label">TÍTULO</div>
+    <div class="plain-block" id="txt-yt-title"></div>
+    <button class="copy-btn" onclick="copyEl('txt-yt-title',this)">⎘ COPIAR TÍTULO</button>
+    <div class="sub-label">DESCRIÇÃO</div>
+    <div class="plain-block scroll-block" id="txt-yt-desc"></div>
+    <button class="copy-btn" onclick="copyEl('txt-yt-desc',this)">⎘ COPIAR DESCRIÇÃO</button>
+    <div class="sub-label">TAGS</div>
+    <div class="plain-block" id="txt-yt-tags"></div>
+    <button class="copy-btn" onclick="copyEl('txt-yt-tags',this)">⎘ COPIAR TAGS</button>
+  </div>
+  <div class="tab-content" id="tab-image">
+    <div class="tab-label">PROMPT CAPA — MIDJOURNEY / DALL-E 3 / KLING</div>
+    <div class="mono-block" id="txt-image"></div>
+    <div class="char-count">Cole no Midjourney, DALL-E 3 ou Kling AI</div>
+    <button class="copy-btn" onclick="copyEl('txt-image',this)">⎘ COPIAR PROMPT CAPA</button>
+  </div>
+</div>
+
+<script>
+var MSGS = ["Analisando DNA musical dos artistas...","Mapeando referências sonoras...","Fundindo estilos musicais...","Escrevendo a letra com emoção...","Montando o prompt do Suno...","Criando metadata do YouTube...","Gerando prompt da capa...","Finalizando a obra..."];
+var savedCfg = {title:'',tags:'',desc:'',concept:'',lyrics:'',general:''};
+var cfgSaved = false;
+var msgInterval = null;
+
+document.getElementById('artist1').addEventListener('input', checkReady);
+document.getElementById('theme').addEventListener('input', checkReady);
+
+function toggleBlock(id) {
+  var body = document.getElementById(id + '-body');
+  var arrow = document.getElementById(id + '-arrow');
+  var isOpen = body.classList.contains('open');
+  if (isOpen) {
+    body.classList.remove('open');
+    arrow.textContent = '▼ abrir';
+  } else {
+    body.classList.add('open');
+    arrow.textContent = '▲ fechar';
+  }
+}
+
+function checkReady() {
+  var a1 = document.getElementById('artist1').value.trim();
+  var th = document.getElementById('theme').value.trim();
+  document.getElementById('btn').className = (a1 && th) ? 'ready' : 'disabled';
+}
+
+function switchTab(id, el) {
+  document.querySelectorAll('.tab-btn').forEach(function(b){ b.classList.remove('active'); });
+  document.querySelectorAll('.tab-content').forEach(function(c){ c.classList.remove('active'); });
+  el.classList.add('active');
+  document.getElementById('tab-' + id).classList.add('active');
+}
+
+function copyEl(id, btn) {
+  navigator.clipboard.writeText(document.getElementById(id).innerText).then(function() {
+    var orig = btn.innerHTML;
+    btn.classList.add('done');
+    btn.textContent = '✓ COPIADO!';
+    setTimeout(function(){ btn.classList.remove('done'); btn.innerHTML = orig; }, 2200);
+  });
+}
+
+function saveConfig() {
+  savedCfg = {
+    title:   document.getElementById('cfg-title').value.trim(),
+    tags:    document.getElementById('cfg-tags').value.trim(),
+    desc:    document.getElementById('cfg-desc').value.trim(),
+    concept: document.getElementById('cfg-concept').value.trim(),
+    lyrics:  document.getElementById('cfg-lyrics').value.trim(),
+    general: document.getElementById('cfg-general').value.trim()
+  };
+  cfgSaved = true;
+  var btn = document.getElementById('saveBtn');
+  var ind = document.getElementById('save-indicator');
+  btn.textContent = '✓ SALVO!';
+  ind.textContent = 'Padrões ativos ✓';
+  setTimeout(function(){ btn.textContent = '💾 SALVAR PADRÕES'; ind.textContent = ''; }, 2500);
+}
+
+function exportConfig() {
+  var cfg = {
+    title:   document.getElementById('cfg-title').value.trim(),
+    tags:    document.getElementById('cfg-tags').value.trim(),
+    desc:    document.getElementById('cfg-desc').value.trim(),
+    concept: document.getElementById('cfg-concept').value.trim(),
+    lyrics:  document.getElementById('cfg-lyrics').value.trim(),
+    general: document.getElementById('cfg-general').value.trim()
+  };
+  var code = btoa(unescape(encodeURIComponent(JSON.stringify(cfg))));
+  navigator.clipboard.writeText(code).then(function() {
+    document.getElementById('save-indicator').textContent = 'Código copiado! Guarde em algum lugar ✓';
+    setTimeout(function(){ document.getElementById('save-indicator').textContent = ''; }, 3500);
+  });
+}
+
+function importConfig() {
+  try {
+    var raw = document.getElementById('cfg-import').value.trim();
+    var cfg = JSON.parse(decodeURIComponent(escape(atob(raw))));
+    if (cfg.title   !== undefined) document.getElementById('cfg-title').value   = cfg.title;
+    if (cfg.tags    !== undefined) document.getElementById('cfg-tags').value    = cfg.tags;
+    if (cfg.desc    !== undefined) document.getElementById('cfg-desc').value    = cfg.desc;
+    if (cfg.concept !== undefined) document.getElementById('cfg-concept').value = cfg.concept;
+    if (cfg.lyrics  !== undefined) document.getElementById('cfg-lyrics').value  = cfg.lyrics;
+    if (cfg.general !== undefined) document.getElementById('cfg-general').value = cfg.general;
+    document.getElementById('cfg-import').value = '';
+    saveConfig();
+    document.getElementById('save-indicator').textContent = 'Config importada e salva ✓';
+    setTimeout(function(){ document.getElementById('save-indicator').textContent = ''; }, 3000);
+  } catch(e) {
+    document.getElementById('save-indicator').textContent = '❌ Código inválido';
+    setTimeout(function(){ document.getElementById('save-indicator').textContent = ''; }, 2500);
+  }
+}
+
+function resetConfig() {
+  savedCfg = {title:'',tags:'',desc:'',concept:'',lyrics:'',general:''};
+  cfgSaved = false;
+  ['cfg-title','cfg-tags','cfg-desc','cfg-concept','cfg-lyrics','cfg-general'].forEach(function(id){
+    document.getElementById(id).value = '';
+  });
+  document.getElementById('save-indicator').textContent = 'Padrões limpos';
+  setTimeout(function(){ document.getElementById('save-indicator').textContent = ''; }, 2000);
+}
+
+function buildRefSection() {
+  var pairs = [
+    [document.getElementById('rs1').value.trim(), document.getElementById('ra1').value.trim()],
+    [document.getElementById('rs2').value.trim(), document.getElementById('ra2').value.trim()],
+    [document.getElementById('rs3').value.trim(), document.getElementById('ra3').value.trim()]
+  ];
+  var refs = pairs.filter(function(p){ return p[0] || p[1]; }).map(function(p){ return '"' + (p[0]||'?') + '" by ' + (p[1]||'?'); });
+  var extra = document.getElementById('rextra').value.trim();
+  if (!refs.length && !extra) return '';
+  var s = '\n\nMUSICAL MAP REFERENCES (analyze DNA — BPM, groove, chords, vocal style — and use as sonic blueprint):';
+  refs.forEach(function(r){ s += '\n- ' + r; });
+  if (extra) s += '\nExtra instructions: ' + extra;
+  return s;
+}
+
+function buildFmtBlock() {
+  if (!cfgSaved) return '';
+  var lines = [];
+  if (savedCfg.title)   lines.push('TITLE FORMAT (follow exactly): ' + savedCfg.title);
+  if (savedCfg.tags)    lines.push('TAGS FORMAT (follow exactly): ' + savedCfg.tags);
+  if (savedCfg.desc)    lines.push('DESCRIPTION FORMAT (follow exactly): ' + savedCfg.desc);
+  if (savedCfg.concept) lines.push('CONCEPT FORMAT: ' + savedCfg.concept);
+  if (savedCfg.lyrics)  lines.push('LYRICS STRUCTURE: ' + savedCfg.lyrics);
+  if (savedCfg.general) lines.push('GENERAL RULES: ' + savedCfg.general);
+  if (!lines.length) return '';
+  return '\n\n=== MANDATORY FORMAT RULES — FOLLOW EXACTLY, NO EXCEPTIONS ===\n' + lines.join('\n') + '\n=== END FORMAT RULES ===';
+}
+
+async function generate() {
+  var a1    = document.getElementById('artist1').value.trim();
+  var a2    = document.getElementById('artist2').value.trim();
+  var theme = document.getElementById('theme').value.trim();
+  var lang  = document.getElementById('lang').value;
+  var notes = document.getElementById('notes').value.trim();
+  if (!a1 || !theme) return;
+
+  var btn = document.getElementById('btn');
+  var loadMsg = document.getElementById('loadMsg');
+  var errEl = document.getElementById('error');
+  errEl.style.display = 'none';
+  btn.className = 'loading';
+  btn.textContent = '⟳  GERANDO...';
+  var i = 0;
+  loadMsg.textContent = MSGS[0];
+  msgInterval = setInterval(function(){ i = (i+1) % MSGS.length; loadMsg.textContent = MSGS[i]; }, 1800);
+
+  var refSection = buildRefSection();
+  var fmtBlock   = buildFmtBlock();
+
+  var sys = 'You are an elite music content creator making viral music concept videos for YouTube channels.\nCRITICAL: Respond ONLY with a single valid JSON object. No preamble, no markdown, no backticks. Raw JSON only.\n' +
+    (refSection ? 'Deeply analyze each referenced song DNA (BPM, key, chords, groove, vocal delivery) and use as sonic blueprint.\n' : '') +
+    fmtBlock +
+    '\n\nJSON schema:\n{\n' +
+    '  "song_title": "Creative song title fitting the theme and artists",\n' +
+    '  "concept": "Rich description of the musical fusion and concept",\n' +
+    '  "lyrics": "Complete structured lyrics with section tags in brackets like [Intro] [Verse 1] [Chorus] etc",\n' +
+    '  "suno_prompt": "Under 900 chars. Production sentence + comma-separated style tags.",\n' +
+    '  "youtube_title": "YouTube title following the format rules above",\n' +
+    '  "youtube_description": "YouTube description following the format rules above",\n' +
+    '  "youtube_tags": "Comma-separated YouTube SEO tags following the format rules above",\n' +
+    '  "image_prompt": "Detailed Midjourney cinematic prompt ending with: --ar 16:9 --style raw --v 6"\n' +
+    '}\n' +
+    'Lyrics language: ' + (lang === 'PT-BR' ? 'Brazilian Portuguese (PT-BR) — fluent, natural, great rhymes' : 'English') + '\n' +
+    'Quality: 10/10. Non-generic. Emotionally resonant.';
+
+  var usr = 'Artists: ' + a1 + (a2 ? ' ft. ' + a2 : '') +
+    '\nTheme: ' + theme +
+    (notes ? '\nStyle notes: ' + notes : '') +
+    refSection +
+    '\nLyrics language: ' + lang;
+
+  try {
+    var res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 4000,
+        system: sys,
+        messages: [{ role: 'user', content: usr }]
+      })
+    });
+    var data = await res.json();
+    if (data.error) throw new Error(data.error.message);
+    var txt = data.content.filter(function(b){ return b.type === 'text'; }).map(function(b){ return b.text; }).join('');
+    var r = JSON.parse(txt.replace(/```json|```/g,'').trim());
+
+    document.getElementById('txt-song-title').textContent  = r.song_title || '';
+    document.getElementById('txt-song-artists').textContent = a1 + (a2 ? ' ft. ' + a2 : '');
+    document.getElementById('txt-concept').textContent     = r.concept || '';
+    document.getElementById('txt-lyrics').textContent      = r.lyrics || '';
+    document.getElementById('txt-suno').textContent        = r.suno_prompt || '';
+    document.getElementById('suno-chars').textContent      = (r.suno_prompt ? r.suno_prompt.length : 0) + ' / 900 caracteres';
+    document.getElementById('txt-yt-title').textContent    = r.youtube_title || '';
+    document.getElementById('txt-yt-desc').textContent     = r.youtube_description || '';
+    document.getElementById('txt-yt-tags').textContent     = r.youtube_tags || '';
+    document.getElementById('txt-image').textContent       = r.image_prompt || '';
+
+    document.getElementById('results').style.display = 'block';
+    document.querySelectorAll('.tab-btn')[0].click();
+    document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+  } catch(e) {
+    errEl.textContent = 'Erro ao gerar: ' + e.message;
+    errEl.style.display = 'block';
+    console.error(e);
+  }
+
+  clearInterval(msgInterval);
+  loadMsg.textContent = '';
+  btn.className = 'ready';
+  btn.textContent = '✦  GERAR TUDO';
+}
+</script>
+</body>
+</html>
